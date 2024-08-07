@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Quantity Validation</title>
+
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
+
+*, *:before, *:after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+body {
+  text-align: center;
+  background: #838383;
+  font-family: 'Open Sans', sans-serif;
+}
+h1, h2,label, p{
+  color: #012B39;
+}
+input{
+  font-size: 16px;
+  text-align: center;
+  background-color: #eeeeee;
+  height: 2rem;
+  border-radius: 5px;
+  border: 1px solid rgb(155, 152, 152);
+}
+/* CSS */
+button {
+  border: .8px solid #012B39;
+  margin: 15px;
+  border-radius: 1rem;
+  cursor: pointer;
+  display: inline-block;
+  font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 10px;
+  outline: none;
+  padding: 13px 23px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
+}
+#totalPrice{
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+label, input{
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+table {
+  background: #012B39;
+  border-radius: 0.25em;
+  border-collapse: collapse;
+  margin: 1em;
+}
+th {
+  border-bottom: 1px solid #364043;
+  color: #E2B842;
+  font-size: 0.85em;
+  font-weight: 600;
+  padding: 0.5em 1em;
+  text-align: center;
+}
+td {
+  color: #fff;
+  font-weight: 400;
+  padding: 0.65em 1em;
+}
+.disabled td {
+  color: #4F5F64;
+}
+tbody tr {
+  transition: background 0.25s ease;
+}
+tbody tr:hover {
+  background: #014055;
+}
+.container{
+  background-color: rgb(255, 255, 255);
+  max-width: 900px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  margin: 1.5rem;
+  justify-content: center;
+  text-align: center;
+  border-radius: 10px;
+}
+.main-container{
+display: flex;
+justify-content: center;
+}
+.listing{
+  margin-top: 2rem;
+}
+#minOrderMessage, #multipleOrderMessage{
+  font-size: 12px;
+ 
+}
+   
+    </style>
+    <script>
+          document.addEventListener("DOMContentLoaded", () => {
+            const minOrderQuantity = 10; // Set your minimum order quantity here
+            const priceList = {
+                10: 4.5,
+                20: 4.2,
+                50: 4.0,
+                100: 3.8
+            }; // Price list for specific quantities
+            const discountPriceAbove100 = 3.5; // Discounted price for quantities above 100
+            
+            const quantityInput = document.getElementById("quantity");
+            const totalPriceDisplay = document.getElementById("totalPrice");
+            const minOrderMessage = document.getElementById("minOrderMessage");
+            const multipleOrderMessage = document.getElementById("multipleOrderMessage");
+            const buyButton = document.getElementById("buyButton");
+            const priceTableBody = document.getElementById("priceTableBody");
+
+            // Display the price list in a table
+            let priceTableHTML = "";
+            for (const [quantity, price] of Object.entries(priceList)) {
+                priceTableHTML += `<tr><td>${quantity}</td><td>$${price.toFixed(2)}</td></tr>`;
+            }
+            priceTableHTML += `<tr><td>Quantities above 100</td><td>$${discountPriceAbove100.toFixed(2)}</td></tr>`;
+            priceTableBody.innerHTML = priceTableHTML;
+
+            function getLowestPrice(quantity) {
+                const quantities = Object.keys(priceList).map(Number).sort((a, b) => a - b);
+                for (let i = 0; i < quantities.length - 1; i++) {
+                    if (quantity > quantities[i] && quantity < quantities[i + 1]) {
+                        return priceList[quantities[i]];
+                    }
+                }
+                return null; // No valid price found
+            }
+
+            quantityInput.addEventListener("input", () => {
+                const quantity = parseInt(quantityInput.value);
+                minOrderMessage.style.display = "none";
+                multipleOrderMessage.style.display = "none";
+                buyButton.disabled = true;
+
+                if (isNaN(quantity) || quantity <= 0) {
+                    totalPriceDisplay.textContent = "Total Price: $0";
+                    return;
+                }
+
+                if (quantity < minOrderQuantity) {
+                    minOrderMessage.style.display = "block";
+                } else if (quantity % minOrderQuantity !== 0) {
+                    multipleOrderMessage.style.display = "block";
+                } else {
+                    let itemPrice;
+                    if (quantity > 100) {
+                        itemPrice = discountPriceAbove100;
+                    } else if (priceList[quantity]) {
+                        itemPrice = priceList[quantity];
+                    } else {
+                        itemPrice = getLowestPrice(quantity);
+                    }
+
+                    if (itemPrice === null) {
+                        totalPriceDisplay.textContent = "No price available for the entered quantity.";
+                        buyButton.disabled = true;
+                    } else {
+                        const totalPrice = quantity * itemPrice;
+                        totalPriceDisplay.textContent = `Total Price: $${totalPrice.toFixed(2)}`;
+                        buyButton.disabled = false;
+                    }
+                }
+            });
+
+            buyButton.addEventListener("click", () => {
+                alert("This item is added to Cart list!");
+            });
+            quoteButton.addEventListener("click", () => {
+                alert("This item is added to Quote list!");
+            });
+        });
+    </script>
+</head>
+<body>
+  <div class="main-container">
+    <div class="container">
+    <h1>Order Form</h1>
+    <label for="quantity">Enter Quantity:</label>
+    <input type="number" id="quantity" min="1">
+    <p id="minOrderMessage" style="display:none; color:red;">Please enter at least the minimum order quantity of 10.</p>
+    <p id="multipleOrderMessage" style="display:none; color:red;">Please enter a multiple of the minimum order quantity (10).</p>
+    <p id="totalPrice">Total Price: ₹0</p>
+    <button id="buyButton" disabled>Buy</button>
+    <button id="quoteButton" enbled>Add to Quote</button>
+    <h2>Price List</h2>
+    <h5>minimum Order Quantity: 10</h5>
+    <h5>Sold In: PCS</h5>
+    <table>
+        <thead>
+            <tr>
+                <th>Quantity</th>
+                <th>Price per Unit</th>
+            </tr>
+        </thead>
+        <tbody id="priceTableBody"></tbody>
+    </table>
+  </div>
+
+
+</div>
+</body>
+</html>
