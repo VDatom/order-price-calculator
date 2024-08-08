@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Order Quantity Validation</title>
-
-    <style>
-      @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Quantity Validation</title>
+<style>
+@import url(https://fonts.googleapis.com/css?family=Open+Sans:400,600);
 *, *:before, *:after {
   margin: 0;
   padding: 0;
@@ -18,10 +16,10 @@ body {
   background: #838383;
   font-family: 'Open Sans', sans-serif;
 }
-h1, h2,label, p{
+h1, h2, label, p {
   color: #012B39;
 }
-input{
+input {
   font-size: 16px;
   text-align: center;
   background-color: #eeeeee;
@@ -36,7 +34,7 @@ button {
   border-radius: 1rem;
   cursor: pointer;
   display: inline-block;
-  font-family: Circular,-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",sans-serif;
+  font-family: Circular, -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", sans-serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 10px;
@@ -46,13 +44,13 @@ button {
   text-align: center;
   text-decoration: none;
   touch-action: manipulation;
-  transition: box-shadow .2s,-ms-transform .1s,-webkit-transform .1s,transform .1s;
+  transition: box-shadow .2s, -ms-transform .1s, -webkit-transform .1s, transform .1s;
 }
-#totalPrice{
+#totalPrice {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
-label, input{
+label, input {
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
@@ -84,7 +82,7 @@ tbody tr {
 tbody tr:hover {
   background: #014055;
 }
-.container{
+.container {
   background-color: rgb(255, 255, 255);
   max-width: 900px;
   padding: 1rem;
@@ -95,126 +93,162 @@ tbody tr:hover {
   text-align: center;
   border-radius: 10px;
 }
-.main-container{
-display: flex;
-justify-content: center;
+.main-container {
+  display: flex;
+  justify-content: center;
 }
-.listing{
+.listing {
   margin-top: 2rem;
 }
-#minOrderMessage, #multipleOrderMessage{
+#minOrderMessage, #multipleOrderMessage, #inStockMessage {
   font-size: 12px;
- 
 }
-   
-    </style>
-    <script>
-          document.addEventListener("DOMContentLoaded", () => {
-            const minOrderQuantity = 10; // Set your minimum order quantity here
-            const priceList = {
-                10: 4.5,
-                20: 4.2,
-                50: 4.0,
-                100: 3.8
-            }; // Price list for specific quantities
-            const discountPriceAbove100 = 3.5; // Discounted price for quantities above 100
-            
-            const quantityInput = document.getElementById("quantity");
-            const totalPriceDisplay = document.getElementById("totalPrice");
-            const minOrderMessage = document.getElementById("minOrderMessage");
-            const multipleOrderMessage = document.getElementById("multipleOrderMessage");
-            const buyButton = document.getElementById("buyButton");
-            const priceTableBody = document.getElementById("priceTableBody");
+</style>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  let inStockQuantity = parseInt(prompt("Please enter the in-stock quantity:", "300"), 10);
+  if (isNaN(inStockQuantity) || inStockQuantity <= 0) {
+    alert("Invalid in-stock quantity. Setting default value to 300.");
+    inStockQuantity = 300;
+  }
 
-            // Display the price list in a table
-            let priceTableHTML = "";
-            for (const [quantity, price] of Object.entries(priceList)) {
-                priceTableHTML += `<tr><td>${quantity}</td><td>$${price.toFixed(2)}</td></tr>`;
-            }
-            priceTableHTML += `<tr><td>Quantities above 100</td><td>$${discountPriceAbove100.toFixed(2)}</td></tr>`;
-            priceTableBody.innerHTML = priceTableHTML;
+  const priceList = {};
+  let priceListString = prompt("Please enter the price list in the format (quantity:price,quantity:price,...):", "10:4.5,20:4.2,50:4.0,100:3.8");
+  if (priceListString) {
+    priceListString.split(',').forEach(item => {
+      const [quantity, price] = item.split(':').map(Number);
+      if (!isNaN(quantity) && !isNaN(price)) {
+        priceList[quantity] = price;
+      }
+    });
+  }
 
-            function getLowestPrice(quantity) {
-                const quantities = Object.keys(priceList).map(Number).sort((a, b) => a - b);
-                for (let i = 0; i < quantities.length - 1; i++) {
-                    if (quantity > quantities[i] && quantity < quantities[i + 1]) {
-                        return priceList[quantities[i]];
-                    }
-                }
-                return null; // No valid price found
-            }
+  let discountPriceAbove = parseInt(prompt("Please enter the quantity above which discount applies:", "100"), 10);
+  let discountPriceAboveValue = parseFloat(prompt(`Please enter the price for quantities above ${discountPriceAbove}:`, "3.5"));
+  if (isNaN(discountPriceAbove) || discountPriceAbove <= 0) {
+    alert("Invalid discount quantity. Setting default value to 100.");
+    discountPriceAbove = 100;
+  }
+  if (isNaN(discountPriceAboveValue) || discountPriceAboveValue <= 0) {
+    alert("Invalid discount price. Setting default value to 3.5.");
+    discountPriceAboveValue = 3.5;
+  }
 
-            quantityInput.addEventListener("input", () => {
-                const quantity = parseInt(quantityInput.value);
-                minOrderMessage.style.display = "none";
-                multipleOrderMessage.style.display = "none";
-                buyButton.disabled = true;
+  const minOrderQuantity = Object.keys(priceList).map(Number).sort((a, b) => a - b)[0]; // Get minimum order quantity from price list
+  const quantityInput = document.getElementById("quantity");
+  const totalPriceDisplay = document.getElementById("totalPrice");
+  const minOrderMessage = document.getElementById("minOrderMessage");
+  const multipleOrderMessage = document.getElementById("multipleOrderMessage");
+  const inStockMessage = document.getElementById("inStockMessage");
+  const buyButton = document.getElementById("buyButton");
+  const quoteButton = document.getElementById("quoteButton");
+  const priceTableBody = document.getElementById("priceTableBody");
+  const inStockDisplay = document.getElementById("inStockDisplay");
 
-                if (isNaN(quantity) || quantity <= 0) {
-                    totalPriceDisplay.textContent = "Total Price: $0";
-                    return;
-                }
+  // Display the in-stock quantity
+  inStockDisplay.textContent = `In Stock: ${inStockQuantity} PCS`;
 
-                if (quantity < minOrderQuantity) {
-                    minOrderMessage.style.display = "block";
-                } else if (quantity % minOrderQuantity !== 0) {
-                    multipleOrderMessage.style.display = "block";
-                } else {
-                    let itemPrice;
-                    if (quantity > 100) {
-                        itemPrice = discountPriceAbove100;
-                    } else if (priceList[quantity]) {
-                        itemPrice = priceList[quantity];
-                    } else {
-                        itemPrice = getLowestPrice(quantity);
-                    }
+  // Display the price list in a table
+  let priceTableHTML = "";
+  for (const [quantity, price] of Object.entries(priceList)) {
+    priceTableHTML += `<tr><td>${quantity}</td><td>₹${price.toFixed(2)}</td></tr>`;
+  }
+  priceTableHTML += `<tr><td>Quantities above ${discountPriceAbove}</td><td>₹${discountPriceAboveValue.toFixed(2)}</td></tr>`;
+  priceTableBody.innerHTML = priceTableHTML;
 
-                    if (itemPrice === null) {
-                        totalPriceDisplay.textContent = "No price available for the entered quantity.";
-                        buyButton.disabled = true;
-                    } else {
-                        const totalPrice = quantity * itemPrice;
-                        totalPriceDisplay.textContent = `Total Price: $${totalPrice.toFixed(2)}`;
-                        buyButton.disabled = false;
-                    }
-                }
-            });
+  function getLowestPrice(quantity) {
+    const quantities = Object.keys(priceList).map(Number).sort((a, b) => a - b);
+    for (let i = 0; i < quantities.length - 1; i++) {
+      if (quantity > quantities[i] && quantity < quantities[i + 1]) {
+        return priceList[quantities[i]];
+      }
+    }
+    return null; // No valid price found
+  }
 
-            buyButton.addEventListener("click", () => {
-                alert("This item is added to Cart list!");
-            });
-            quoteButton.addEventListener("click", () => {
-                alert("This item is added to Quote list!");
-            });
-        });
-    </script>
+  quantityInput.addEventListener("input", () => {
+    const quantity = parseInt(quantityInput.value);
+    minOrderMessage.style.display = "none";
+    multipleOrderMessage.style.display = "none";
+    inStockMessage.style.display = "none";
+    buyButton.disabled = true;
+
+    if (isNaN(quantity) || quantity <= 0) {
+      totalPriceDisplay.textContent = "Total Price: ₹0";
+      return;
+    }
+
+    if (quantity > inStockQuantity) {
+      inStockMessage.textContent = `Quantity in stock is ${inStockQuantity}. You can order a maximum of ${inStockQuantity} quantity.`;
+      inStockMessage.style.display = "block";
+    } else if (quantity < minOrderQuantity) {
+      minOrderMessage.textContent = `Please enter at least the minimum order quantity of ${minOrderQuantity}.`;
+      minOrderMessage.style.display = "block";
+    } else if (quantity % minOrderQuantity !== 0) {
+      multipleOrderMessage.textContent = `Please enter a multiple of the minimum order quantity (${minOrderQuantity}).`;
+      multipleOrderMessage.style.display = "block";
+    } else {
+      let itemPrice;
+      if (quantity > discountPriceAbove) {
+        itemPrice = discountPriceAboveValue;
+      } else if (priceList[quantity]) {
+        itemPrice = priceList[quantity];
+      } else {
+        itemPrice = getLowestPrice(quantity);
+      }
+      
+      if (itemPrice === null) {
+        totalPriceDisplay.textContent = "No price available for the entered quantity.";
+        buyButton.disabled = true;
+      } else {
+        const totalPrice = quantity * itemPrice;
+        totalPriceDisplay.textContent = `Total Price: ₹${totalPrice.toFixed(2)}`;
+        buyButton.disabled = false;
+      }
+    }
+  });
+
+  buyButton.addEventListener("click", () => {
+    alert("This item is added to Cart list!");
+  });
+
+  quoteButton.addEventListener("click", () => {
+    alert("This item is added to Quote list!");
+  });
+
+  document.getElementById("reloadButton").addEventListener("click", () => {
+    location.reload();
+  });
+});
+</script>
 </head>
 <body>
-  <div class="main-container">
-    <div class="container">
+<div class="main-container">
+  <div class="container">
     <h1>Order Form</h1>
+    <p id="inStockDisplay">In Stock: 300 PCS</p>
     <label for="quantity">Enter Quantity:</label>
     <input type="number" id="quantity" min="1">
-    <p id="minOrderMessage" style="display:none; color:red;">Please enter at least the minimum order quantity of 10.</p>
-    <p id="multipleOrderMessage" style="display:none; color:red;">Please enter a multiple of the minimum order quantity (10).</p>
+    <p id="minOrderMessage" style="display:none; color:red;">Please enter at least the minimum order quantity.</p>
+    <p id="multipleOrderMessage" style="display:none; color:red;">Please enter a multiple of the minimum order quantity.</p>
+    <p id="inStockMessage" style="display:none; color:red;">Quantity in stock is 300. You can order a maximum of 300 quantity.</p>
     <p id="totalPrice">Total Price: ₹0</p>
     <button id="buyButton" disabled>Buy</button>
-    <button id="quoteButton" enbled>Add to Quote</button>
+    <button id="quoteButton">Add to Quote</button>
     <h2>Price List</h2>
-    <h5>minimum Order Quantity: 10</h5>
+    <h5>Minimum Order Quantity: 10</h5>
     <h5>Sold In: PCS</h5>
     <table>
-        <thead>
-            <tr>
-                <th>Quantity</th>
-                <th>Price per Unit</th>
-            </tr>
-        </thead>
-        <tbody id="priceTableBody"></tbody>
+      <thead>
+        <tr>
+          <th>Quantity</th>
+          <th>Price per Unit</th>
+        </tr>
+      </thead>
+      <tbody id="priceTableBody"></tbody>
     </table>
+    <button id="reloadButton">Reload Page</button>
   </div>
-
-
 </div>
 </body>
 </html>
