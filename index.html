@@ -27,7 +27,6 @@ input {
   border-radius: 5px;
   border: 1px solid rgb(155, 152, 152);
 }
-/* CSS */
 button {
   border: .8px solid #012B39;
   margin: 15px;
@@ -100,7 +99,7 @@ tbody tr:hover {
 .listing {
   margin-top: 2rem;
 }
-#minOrderMessage, #multipleOrderMessage, #inStockMessage {
+#moqMessage, #minOrderMessage, #multipleOrderMessage, #inStockMessage {
   font-size: 12px;
 }
 </style>
@@ -137,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const minOrderQuantity = Object.keys(priceList).map(Number).sort((a, b) => a - b)[0]; // Get minimum order quantity from price list
   const quantityInput = document.getElementById("quantity");
   const totalPriceDisplay = document.getElementById("totalPrice");
+  const moqMessage = document.getElementById("moqMessage");
   const minOrderMessage = document.getElementById("minOrderMessage");
   const multipleOrderMessage = document.getElementById("multipleOrderMessage");
   const inStockMessage = document.getElementById("inStockMessage");
@@ -147,6 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Display the in-stock quantity
   inStockDisplay.textContent = `In Stock: ${inStockQuantity} PCS`;
+
+  // Display MOQ
+  moqMessage.textContent = `Minimum Order Quantity (MOQ): ${minOrderQuantity} PCS`;
 
   // Display the price list in a table
   let priceTableHTML = "";
@@ -226,6 +229,7 @@ document.addEventListener("DOMContentLoaded", () => {
 <div class="main-container">
   <div class="container">
     <h1>Order Form</h1>
+    
     <p id="inStockDisplay">In Stock: 300 PCS</p>
     <label for="quantity">Enter Quantity:</label>
     <input type="number" id="quantity" min="1">
@@ -236,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
     <button id="buyButton" disabled>Buy</button>
     <button id="quoteButton">Add to Quote</button>
     <h2>Price List</h2>
-    <h5>Minimum Order Quantity: 10</h5>
+    <p id="moqMessage">Minimum Order Quantity (MOQ): 10 PCS</p>
     <h5>Sold In: PCS</h5>
     <table>
       <thead>
